@@ -287,22 +287,52 @@ async function limparTabela(tabela) {
   return true;
 }
 
-function CardKpi({ titulo, valor, subtitulo, icon: Icone, cor }) {
+function CardKpi({ titulo, valor, subtitulo, icon: Icone, cor, carregando }) {
   return (
     <div className="bg-white/90 backdrop-blur rounded-3xl shadow-sm hover:shadow-md transition p-6 border border-gray-200/70">
       <div className="flex items-center gap-4">
         <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center ${cor} shadow-sm ring-1 ring-white/50`}
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+            carregando ? "bg-gray-300" : cor
+          } shadow-sm ring-1 ring-white/50`}
         >
-          <Icone size={26} className="text-white" />
+          {!carregando && <Icone size={26} className="text-white" />}
         </div>
-
-        <div>
+        <div className="flex-1">
           <p className="text-gray-600 text-sm xl:text-base font-semibold">{titulo}</p>
-          <h2 className="text-2xl xl:text-3xl font-bold leading-tight">
-            {valor}
-          </h2>
-          {subtitulo && <p className="text-gray-500 text-xs">{subtitulo}</p>}
+          {carregando ? (
+            <Skeleton className="h-8 w-32 mt-2" />
+          ) : (
+            <h2 className="text-2xl xl:text-3xl font-bold leading-tight">{valor}</h2>
+          )}
+          {subtitulo &&
+            (carregando ? (
+              <Skeleton className="h-3 w-24 mt-2" />
+            ) : (
+              <p className="text-gray-500 text-xs">{subtitulo}</p>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function Skeleton({ className = "" }) {
+  return <div className={"animate-pulse bg-gray-200/80 rounded-xl " + className} />;
+}
+
+function SkeletonGrafico({ titulo, altura = 380 }) {
+  return (
+    <div className="bg-white/90 backdrop-blur rounded-3xl shadow-sm p-6 border border-gray-200/70">
+      <h2 className="font-semibold mb-3 text-base xl:text-lg">{titulo}</h2>
+      <div className="animate-pulse" style={{ height: Math.max(altura - 60, 180) }}>
+        <div className="flex flex-col gap-3 h-full justify-center">
+          <Skeleton className="h-6 w-4/5" />
+          <Skeleton className="h-6 w-3/5" />
+          <Skeleton className="h-6 w-5/6" />
+          <Skeleton className="h-6 w-2/3" />
+          <Skeleton className="h-6 w-1/2" />
         </div>
       </div>
     </div>
@@ -780,6 +810,9 @@ function App() {
   const [municipes, setMunicipes] = useState([]);
   const [iptuDigital, setIptuDigital] = useState([]);
   const [importando, setImportando] = useState(false);
+ const [carregandoDados, setCarregandoDados] = useState(true);
+ const [erroCarregamento, setErroCarregamento] = useState("");
+
 
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroCpf, setFiltroCpf] = useState("");
@@ -797,18 +830,27 @@ function App() {
   const itensPorPagina = 10;
 
   async function carregarDados() {
-    const arrecadacaoData = await carregarTodosRegistros(
-      "arrecadacao_bi",
-      "liquidacao"
-    );
-
-    const municipesData = await carregarTodosRegistros("municipes");
-    const iptuData = await carregarTodosRegistros("iptu_digital");
+  setCarregandoDados(true);
+  setErroCarregamento("");
+  try {
+    const [arrecadacaoData, municipesData, iptuData] = await Promise.all([
+      carregarTodosRegistros("arrecadacao_bi", "liquidacao"),
+      carregarTodosRegistros("municipes"),
+      carregarTodosRegistros("iptu_digital"),
+    ]);
 
     setArrecadacao(arrecadacaoData || []);
     setMunicipes(municipesData || []);
     setIptuDigital(iptuData || []);
+  } catch (erro) {
+    console.log(erro);
+    setErroCarregamento(
+      "Não foi possível carregar os dados. Verifique sua conexão e as variáveis do Supabase."
+    );
+  } finally {
+    setCarregandoDados(false);
   }
+}
 
   useEffect(() => {
     carregarDados();
@@ -1219,6 +1261,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-900">
+      <div style={{ background: "red", color: "white", padding: "16px", fontSize: "20px", textAlign: "center", fontWeight: "bold" }}>
+        🚨 TESTE VISUAL — ESTE É O App.jsx 🚨
+      </div>
       <header className="sticky top-0 z-50 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 shadow-lg/20 border-b border-yellow-200/40">
       <div className="max-w-[1600px] mx-auto w-full min-h-20 flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
@@ -1233,6 +1278,17 @@ function App() {
         </div>
 
         <div className="flex gap-2 flex-wrap justify-end">
+          {carregandoDados && (
+            <div className="mr-2 inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/80 backdrop-blur border border-white/60 text-sm font-semibold text-gray-700 shadow-sm">
+              <span className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-amber-500 animate-spin" />
+              Carregando dados...
+            </div>
+          )}
+          {erroCarregamento && (
+            <div className="mr-2 inline-flex items-center px-3 py-2 rounded-2xl bg-red-50 border border-red-200 text-sm font-semibold text-red-700">
+              {erroCarregamento}
+            </div>
+          )}
           <label className="bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl shadow-sm border border-white/60 text-sm font-semibold flex items-center gap-2 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-within:ring-2 focus-within:ring-yellow-200/80">
             <Upload size={16} />
             {importando ? "Importando..." : "Munícipes"}
@@ -1359,7 +1415,7 @@ function App() {
 
             <div className="border border-gray-200 rounded-2xl px-4 py-2.5 bg-white/80 backdrop-blur shadow-sm">
               <span className="text-gray-500 text-sm">Registros: </span>
-              <strong>{formatarNumero(dadosFiltrados.length)}</strong>
+              <strong>{carregandoDados ? "..." : formatarNumero(dadosFiltrados.length)}</strong>
             </div>
           </div>
 )}
@@ -1383,7 +1439,9 @@ function App() {
                 subtitulo="Guias Liquidadas"
                 icon={CreditCard}
                 cor="bg-blue-600"
-              />
+              
+ carregando={carregandoDados}
+ />
 
               <CardKpi
                 titulo="Valor Arrecadado"
@@ -1391,7 +1449,9 @@ function App() {
                 subtitulo="Total Arrecadado"
                 icon={Landmark}
                 cor="bg-emerald-500"
-              />
+              
+ carregando={carregandoDados}
+ />
 
               <CardKpi
                 titulo="Aplicativo Baixado"
@@ -1399,7 +1459,9 @@ function App() {
                 subtitulo="Total de Downloads"
                 icon={Smartphone}
                 cor="bg-pink-500"
-              />
+              
+ carregando={carregandoDados}
+ />
 
               <CardKpi
                 titulo="IPTU Digital"
@@ -1407,7 +1469,9 @@ function App() {
                 subtitulo="Total de Cadastros"
                 icon={Building2}
                 cor="bg-purple-500"
-              />
+              
+ carregando={carregandoDados}
+ />
             </div>
 
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-7">
@@ -1425,23 +1489,49 @@ function App() {
     </div>
 
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-7">
-      <GraficoBanco data={bancos} />
-      <GraficoParcela
+      {carregandoDados ? (
+  <SkeletonGrafico titulo="Banco Arrecadador" altura={380} />
+) : (
+  <GraficoBanco data={bancos} />
+)}
+      {carregandoDados ? (
+  <SkeletonGrafico titulo="Tipo por Parcela" altura={380} />
+) : (
+  <GraficoParcela
                 data={parcelas}
                 parcelaSelecionada={parcelaSelecionada}
                 setParcelaSelecionada={setParcelaSelecionada}
               />
+)}
     </div>
 
-    <GraficoBairros data={bairros} />
+    {carregandoDados ? (
+  <SkeletonGrafico titulo="Qtd por Bairro" altura={430} />
+) : (
+  <GraficoBairros data={bairros} />
+)}
 
-    <GraficoPerformance data={performance} />
+    {carregandoDados ? (
+  <SkeletonGrafico titulo="Diário de desempenho" altura={430} />
+) : (
+  <GraficoPerformance data={performance} />
+)}
 
     <div className="bg-white/90 backdrop-blur rounded-3xl shadow-sm hover:shadow-md transition p-6 border border-gray-200/70">
               <h2 className="text-2xl xl:text-3xl font-semibold tracking-tight mb-5">Tabela Operacional</h2>
 
               <div className="overflow-auto max-h-[560px] rounded-2xl border border-gray-100">
-                <table className="w-full text-sm">
+        {carregandoDados ? (
+          <div className="flex items-center justify-center py-16 text-gray-700">
+            <span className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-amber-500 animate-spin mr-3" />
+            Carregando dados do Supabase...
+          </div>
+        ) : dadosTabela.length === 0 ? (
+          <div className="py-16 text-center text-gray-500">
+            Nenhum registro encontrado para os filtros/período selecionados.
+          </div>
+        ) : (
+          <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-gradient-to-r from-slate-50 to-gray-100 backdrop-blur border-b border-gray-200 z-10">
                     <tr>
                       <th className="p-3 text-left text-xs uppercase tracking-wider font-extrabold text-gray-600">Liquidação</th>
@@ -1476,7 +1566,8 @@ function App() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+        )}
+      </div>
 
               <div className="flex items-center justify-between mt-4 text-sm">
                 <div>
