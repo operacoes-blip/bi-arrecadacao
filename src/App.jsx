@@ -1259,12 +1259,10 @@ function App() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-900">
-      <div style={{ background: "red", color: "white", padding: "16px", fontSize: "20px", textAlign: "center", fontWeight: "bold" }}>
-        🚨 TESTE VISUAL — ESTE É O App.jsx 🚨
-      </div>
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 shadow-lg/20 border-b border-yellow-200/40">
+ return (
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-900">
+
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 shadow-lg/20 border-b border-yellow-200/40">
       <div className="max-w-[1600px] mx-auto w-full min-h-20 flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="bg-white/95 backdrop-blur rounded-2xl p-3 shadow-sm border border-white/60">
@@ -1272,8 +1270,12 @@ function App() {
           </div>
 
           <div>
-            <h1 className="text-2xl xl:text-3xl font-extrabold tracking-tight text-white">SEMEF</h1>
-            <p className="text-sm xl:text-base text-white/90">Painel de Arrecadação</p>
+            <h1 className="text-2xl xl:text-3xl font-extrabold tracking-tight text-white">
+              SEMEF
+            </h1>
+            <p className="text-sm xl:text-base text-white/90">
+              Painel de Arrecadação
+            </p>
           </div>
         </div>
 
@@ -1284,48 +1286,14 @@ function App() {
               Carregando dados...
             </div>
           )}
+
           {erroCarregamento && (
             <div className="mr-2 inline-flex items-center px-3 py-2 rounded-2xl bg-red-50 border border-red-200 text-sm font-semibold text-red-700">
               {erroCarregamento}
             </div>
           )}
-          <label className="bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl shadow-sm border border-white/60 text-sm font-semibold flex items-center gap-2 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-within:ring-2 focus-within:ring-yellow-200/80">
-            <Upload size={16} />
-            {importando ? "Importando..." : "Munícipes"}
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              className="hidden"
-              onChange={importarMunicipes}
-              disabled={importando}
-            />
-          </label>
-
-          <label className="bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl shadow-sm border border-white/60 text-sm font-semibold flex items-center gap-2 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-within:ring-2 focus-within:ring-yellow-200/80">
-            <Upload size={16} />
-            {importando ? "Importando..." : "IPTU Digital"}
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              className="hidden"
-              onChange={importarIptuDigital}
-              disabled={importando}
-            />
-          </label>
-
-          <label className="bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl shadow-sm border border-white/60 text-sm font-semibold flex items-center gap-2 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-within:ring-2 focus-within:ring-yellow-200/80">
-            <Upload size={16} />
-            {importando ? "Importando..." : "Arrecadação BI"}
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              className="hidden"
-              onChange={importarArrecadacao}
-              disabled={importando}
-            />
-          </label>
         </div>
-          </div>
+      </div>
     </header>
 
       <main className="p-6 md:p-8 space-y-12">
